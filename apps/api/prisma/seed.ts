@@ -156,7 +156,7 @@ async function main(): Promise<void> {
 
   for (const [branchIndex, branch] of branches.entries()) {
     for (let day = 1; day <= 30; day += 1) {
-      const externalId = `${branch.externalId}:2026-10-${String(day).padStart(2, '0')}`;
+      const externalId = `mock-provider:${branch.externalId}:2026-10-${String(day).padStart(2, '0')}`;
       const newReviewsCount = (day + branchIndex) % 6 === 0 ? 2 : 0;
       const metric = {
         id: `60000000-0000-4000-8000-${String(branchIndex + 1).padStart(4, '0')}${String(day).padStart(8, '0')}`,
@@ -176,7 +176,7 @@ async function main(): Promise<void> {
         externalId,
       };
       await prisma.dailyMetric.upsert({
-        where: { source_externalId: { source: metric.source, externalId } },
+        where: { branchId_date: { branchId: branch.id, date: metric.date } },
         create: metric,
         update: {
           branchId: metric.branchId,
@@ -188,6 +188,8 @@ async function main(): Promise<void> {
           websiteClicks: metric.websiteClicks,
           newReviewsCount: metric.newReviewsCount,
           averageRating: metric.averageRating,
+          source: metric.source,
+          externalId: metric.externalId,
         },
       });
     }
