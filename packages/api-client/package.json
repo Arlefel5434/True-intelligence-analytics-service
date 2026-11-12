@@ -3,12 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
     }
   },
   "files": [
@@ -18,9 +18,10 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
     "test": "node --test",
-    "generate": "node -e \"console.log('OpenAPI client generation will be enabled in step 8')\""
+    "generate": "openapi-typescript openapi.json -o src/generated/schema.d.ts && prettier --write openapi.json src/generated/schema.d.ts"
   },
   "devDependencies": {
+    "openapi-typescript": "^7.13.0",
     "typescript": "5.9.3"
   }
 }

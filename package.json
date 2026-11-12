@@ -16,7 +16,7 @@
     "test:e2e": "pnpm --filter @tia/api run test:e2e",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "api:generate": "pnpm --filter @tia/api-client run generate"
+    "api:generate": "pnpm --filter @tia/api run openapi:generate && pnpm --filter @tia/api-client run generate"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
