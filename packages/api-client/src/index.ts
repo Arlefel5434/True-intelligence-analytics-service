@@ -8,6 +8,7 @@ export type AnalyticsResponse = components['schemas']['AnalyticsResponseDto'];
 export type AnalyticsMetric = AnalyticsResponse['filters']['metric'];
 export type Company = components['schemas']['CompanyDto'];
 export type Branch = components['schemas']['BranchDto'];
+export type ImportRunResponse = components['schemas']['ImportRunResponseDto'];
 
 export class ApiError extends Error {
   constructor(
@@ -102,4 +103,9 @@ export const api = {
         : undefined,
     });
   },
+  runImport: (parameters: { from: string; to: string }) =>
+    request<ImportRunResponse>('/api/imports/statistics', {
+      method: 'POST',
+      body: JSON.stringify(parameters),
+    }),
 };

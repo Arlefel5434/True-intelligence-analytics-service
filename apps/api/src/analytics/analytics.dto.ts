@@ -46,12 +46,12 @@ export class AnalyticsTotalsDto {
   @ApiProperty() calls!: number;
   @ApiProperty() routeBuilds!: number;
   @ApiProperty() newReviewsCount!: number;
-  @ApiProperty({ nullable: true }) averageRating!: number | null;
+  @ApiProperty({ type: Number, nullable: true }) averageRating!: number | null;
 }
 
 export class AnalyticsSeriesPointDto {
   @ApiProperty() date!: string;
-  @ApiProperty({ nullable: true }) value!: number | null;
+  @ApiProperty({ type: Number, nullable: true }) value!: number | null;
 }
 
 export class AnalyticsMetadataDto {

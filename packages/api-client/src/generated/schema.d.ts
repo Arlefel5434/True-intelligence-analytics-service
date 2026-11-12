@@ -180,8 +180,36 @@ export interface components {
       /** @enum {string} */
       role: 'ADMIN' | 'CLIENT';
       companyId: string | null;
+      companyName: string | null;
     };
-    RunStatisticsImportDto: Record<string, never>;
+    RunStatisticsImportDto: {
+      /** @example 2026-10-01 */
+      from: string;
+      /** @example 2026-10-31 */
+      to: string;
+    };
+    ImportWarningDto: {
+      code: string;
+      page: number;
+      message: string;
+      externalBranchId?: string;
+    };
+    ImportRunResponseDto: {
+      id: string;
+      /** @enum {string} */
+      source: 'MOCK_PROVIDER';
+      dateFrom: string;
+      dateTo: string;
+      /** @enum {string} */
+      status: 'RUNNING' | 'COMPLETED' | 'COMPLETED_WITH_WARNINGS' | 'FAILED';
+      createdCount: number;
+      updatedCount: number;
+      skippedCount: number;
+      warnings: components['schemas']['ImportWarningDto'][];
+      errorMessage: Record<string, never> | null;
+      startedAt: string;
+      finishedAt: string;
+    };
     AnalyticsFiltersDto: {
       from: string;
       to: string;
@@ -203,11 +231,11 @@ export interface components {
       calls: number;
       routeBuilds: number;
       newReviewsCount: number;
-      averageRating: Record<string, never> | null;
+      averageRating: number | null;
     };
     AnalyticsSeriesPointDto: {
       date: string;
-      value: Record<string, never> | null;
+      value: number | null;
     };
     AnalyticsMetadataDto: {
       branchCount: number;
@@ -366,7 +394,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['ImportRunResponseDto'];
+        };
       };
     };
   };

@@ -56,16 +56,3 @@ export function ProtectedLayout() {
     </div>
   );
 }
-
-export function HomePage() {
-  return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-      <p className="mb-2 text-sm font-semibold text-slate-500">Обзор</p>
-      <h1 className="text-3xl font-bold">Аналитика филиалов</h1>
-      <p className="mt-3 max-w-2xl text-slate-600">
-        Основа кабинета готова. Выбор компании, фильтры и визуализация
-        показателей будут собраны на следующем шаге.
-      </p>
-    </section>
-  );
-}
