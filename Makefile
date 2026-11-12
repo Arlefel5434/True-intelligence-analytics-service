@@ -30,7 +30,7 @@ test:
 	$(PNPM) test
 
 test-e2e:
-	$(PNPM) test:e2e
+	docker compose --profile dev run --rm --build db-tools pnpm --filter @tia/api run test:e2e
 
 api-generate:
 	$(PNPM) api:generate
