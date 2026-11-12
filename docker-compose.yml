@@ -45,6 +45,7 @@ services:
       NODE_ENV: production
       PORT: 3001
       PROVIDER_API_KEY: ${PROVIDER_API_KEY:-local_provider_key}
+      MOCK_SCENARIOS_ENABLED: 'false'
     expose: ['3001']
     healthcheck:
       <<: *node-healthcheck
@@ -149,6 +150,7 @@ services:
       NODE_ENV: development
       PORT: 3001
       PROVIDER_API_KEY: ${PROVIDER_API_KEY:-local_provider_key}
+      MOCK_SCENARIOS_ENABLED: 'true'
     expose: ['3001']
     depends_on:
       workspace-init:
