@@ -23,4 +23,5 @@ tmp/
 .tmp/
 
 doc/plan/
+doc/architecture.md
 
