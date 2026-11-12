@@ -1,0 +1,159 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  CLIENT
+}
+
+enum DataSource {
+  MOCK_PROVIDER
+}
+
+enum ReviewStatus {
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ImportStatus {
+  RUNNING
+  COMPLETED
+  COMPLETED_WITH_WARNINGS
+  FAILED
+}
+
+model Company {
+  id        String   @id @db.Uuid
+  name      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  branches Branch[]
+  users    User[]
+
+  @@map("companies")
+}
+
+model User {
+  id           String   @id @db.Uuid
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole
+  companyId    String?  @map("company_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  company         Company?         @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  refreshSessions RefreshSession[]
+  importRuns      ImportRun[]      @relation("ImportRunTriggeredBy")
+
+  @@index([companyId])
+  @@map("users")
+}
+
+model Branch {
+  id         String   @id @db.Uuid
+  companyId  String   @map("company_id") @db.Uuid
+  externalId String   @unique @map("external_id")
+  name       String
+  address    String
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  dailyMetrics DailyMetric[]
+  reviews      Review[]
+
+  @@index([companyId])
+  @@map("branches")
+}
+
+model DailyMetric {
+  id              String     @id @db.Uuid
+  branchId        String     @map("branch_id") @db.Uuid
+  date            DateTime   @db.Date
+  views           Int
+  searches        Int
+  routeBuilds     Int        @map("route_builds")
+  calls           Int
+  websiteClicks   Int        @map("website_clicks")
+  newReviewsCount Int        @map("new_reviews_count")
+  averageRating   Decimal?   @map("average_rating") @db.Decimal(3, 2)
+  source          DataSource
+  externalId      String     @map("external_id")
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+
+  @@unique([branchId, date])
+  @@unique([source, externalId])
+  @@index([branchId, date])
+  @@map("daily_metrics")
+}
+
+model Review {
+  id          String       @id @db.Uuid
+  branchId    String       @map("branch_id") @db.Uuid
+  rating      Int
+  text        String
+  status      ReviewStatus @default(PUBLISHED)
+  publishedAt DateTime     @map("published_at") @db.Timestamptz(3)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+
+  @@index([branchId, publishedAt])
+  @@map("reviews")
+}
+
+model RefreshSession {
+  id           String    @id @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  familyId     String    @map("family_id") @db.Uuid
+  tokenHash    String    @unique @map("token_hash")
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt    DateTime? @map("revoked_at") @db.Timestamptz(3)
+  replacedById String?   @unique @map("replaced_by_id") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replacedBy RefreshSession? @relation("RefreshRotation", fields: [replacedById], references: [id], onDelete: SetNull)
+  replaces   RefreshSession? @relation("RefreshRotation")
+
+  @@index([userId, revokedAt, expiresAt])
+  @@index([familyId])
+  @@map("refresh_sessions")
+}
+
+model ImportRun {
+  id            String       @id @db.Uuid
+  source        DataSource
+  dateFrom      DateTime     @map("date_from") @db.Date
+  dateTo        DateTime     @map("date_to") @db.Date
+  status        ImportStatus @default(RUNNING)
+  createdCount  Int          @default(0) @map("created_count")
+  updatedCount  Int          @default(0) @map("updated_count")
+  skippedCount  Int          @default(0) @map("skipped_count")
+  warnings      Json?
+  errorMessage  String?      @map("error_message")
+  triggeredById String?      @map("triggered_by_id") @db.Uuid
+  startedAt     DateTime     @default(now()) @map("started_at") @db.Timestamptz(3)
+  finishedAt    DateTime?    @map("finished_at") @db.Timestamptz(3)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  triggeredBy User? @relation("ImportRunTriggeredBy", fields: [triggeredById], references: [id], onDelete: SetNull)
+
+  @@index([triggeredById])
+  @@index([source, startedAt])
+  @@map("import_runs")
+}
