@@ -70,6 +70,7 @@ describe('authentication', () => {
       email: validCredentials.email,
       role: 'CLIENT',
       companyId: expect.any(String),
+      companyName: 'Северная чашка',
     });
     expect(login.body).not.toHaveProperty('passwordHash');
     expect(login.body).not.toHaveProperty('accessToken');

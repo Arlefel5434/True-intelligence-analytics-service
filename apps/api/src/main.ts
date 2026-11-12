@@ -7,6 +7,8 @@ import { AUTH_CONFIG } from './auth/auth.constants.js';
 import type { AuthConfig } from './auth/auth.config.js';
 import { readPort } from './config.js';
 import { configureSwagger } from './swagger.js';
+import { ApiErrorFilter } from './http/error.filter.js';
+import { correlationMiddleware } from './http/correlation.middleware.js';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
@@ -14,7 +16,9 @@ async function bootstrap(): Promise<void> {
   configureSwagger(app);
   const authConfig = app.get<AuthConfig>(AUTH_CONFIG);
 
+  app.use(correlationMiddleware);
   app.use(cookieParser());
+  app.useGlobalFilters(new ApiErrorFilter());
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -30,6 +34,13 @@ async function bootstrap(): Promise<void> {
   });
   const expressApp = app.getHttpAdapter().getInstance() as Application;
   expressApp.set('trust proxy', 1);
+  expressApp.disable('x-powered-by');
+  expressApp.use((_request, response, next) => {
+    response.setHeader('X-Content-Type-Options', 'nosniff');
+    response.setHeader('Referrer-Policy', 'no-referrer');
+    response.setHeader('X-Frame-Options', 'DENY');
+    next();
+  });
 
   const port = readPort(process.env.PORT, 3000);
   await app.listen(port, '0.0.0.0');

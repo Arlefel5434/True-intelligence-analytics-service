@@ -159,4 +159,57 @@ describe('DashboardPage', () => {
     });
     expect(await screen.findByText(/Создано: 5/)).toBeVisible();
   });
+
+  it('shows an empty period and lets the client change filters', async () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: {
+        id: 'client',
+        email: 'client@example.test',
+        role: 'CLIENT',
+        companyId: 'company-1',
+        companyName: 'Север',
+      },
+      loading: false,
+      error: null,
+      login: vi.fn(),
+      logout: vi.fn(),
+    });
+    vi.mocked(api.analytics).mockResolvedValue({
+      ...analytics,
+      totals: { ...analytics.totals, views: 0, averageRating: null },
+      series: [],
+      metadata: { branchCount: 2, dataPoints: 0 },
+    });
+    renderDashboard('/?from=2026-10-01&to=2026-10-30');
+    expect(
+      await screen.findByText('За выбранный период данных нет'),
+    ).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Применить' })).toBeEnabled();
+    expect(screen.getByText('Нет данных')).toBeVisible();
+  });
+
+  it('offers retry when analytics fails', async () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: {
+        id: 'client',
+        email: 'client@example.test',
+        role: 'CLIENT',
+        companyId: 'company-1',
+        companyName: 'Север',
+      },
+      loading: false,
+      error: null,
+      login: vi.fn(),
+      logout: vi.fn(),
+    });
+    vi.mocked(api.analytics)
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValue(analytics);
+    renderDashboard('/?from=2026-10-01&to=2026-10-30');
+    expect(
+      await screen.findByText('Не удалось загрузить аналитику'),
+    ).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    expect(await screen.findByText('1 250')).toBeVisible();
+  });
 });
