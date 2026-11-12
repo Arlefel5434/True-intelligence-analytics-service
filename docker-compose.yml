@@ -73,6 +73,10 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-tia}:${POSTGRES_PASSWORD:-local_tia_password}@postgres:5432/${POSTGRES_DB:-tia}
       PROVIDER_BASE_URL: http://provider-mock:3001
       PROVIDER_API_KEY: ${PROVIDER_API_KEY:-local_provider_key}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-local_access_secret_replace_me_32_chars}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-local_refresh_secret_replace_me_32_chars}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
       APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8080}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
     expose: ['3000']
@@ -179,6 +183,10 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-tia}:${POSTGRES_PASSWORD:-local_tia_password}@postgres:5432/${POSTGRES_DB:-tia}
       PROVIDER_BASE_URL: http://provider-mock:3001
       PROVIDER_API_KEY: ${PROVIDER_API_KEY:-local_provider_key}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-local_access_secret_replace_me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-local_refresh_secret_replace_me}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
       APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8080}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
     expose: ['3000']
@@ -245,6 +253,15 @@ services:
     user: '1000:1000'
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-tia}:${POSTGRES_PASSWORD:-local_tia_password}@postgres:5432/${POSTGRES_DB:-tia}
+      TEST_DATABASE_URL: postgresql://${POSTGRES_USER:-tia}:${POSTGRES_PASSWORD:-local_tia_password}@postgres:5432/tia_test
+      ADMIN_DATABASE_URL: postgresql://${POSTGRES_USER:-tia}:${POSTGRES_PASSWORD:-local_tia_password}@postgres:5432/postgres
+      NODE_ENV: test
+      JWT_ACCESS_SECRET: test_access_secret_at_least_32_characters
+      JWT_REFRESH_SECRET: test_refresh_secret_at_least_32_characters
+      JWT_ACCESS_TTL: 1s
+      JWT_REFRESH_TTL: 7d
+      APP_ORIGIN: http://localhost:8080
+      COOKIE_SECURE: 'false'
     depends_on:
       postgres:
         condition: service_healthy
