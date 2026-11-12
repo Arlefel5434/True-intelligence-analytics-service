@@ -6,10 +6,12 @@ import { AppModule } from './app.module.js';
 import { AUTH_CONFIG } from './auth/auth.constants.js';
 import type { AuthConfig } from './auth/auth.config.js';
 import { readPort } from './config.js';
+import { configureSwagger } from './swagger.js';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
+  configureSwagger(app);
   const authConfig = app.get<AuthConfig>(AUTH_CONFIG);
 
   app.use(cookieParser());

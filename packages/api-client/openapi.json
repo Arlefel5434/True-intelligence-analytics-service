@@ -1,0 +1,432 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/health/live": {
+      "get": {
+        "operationId": "HealthController_live",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Health"]
+      }
+    },
+    "/api/health/ready": {
+      "get": {
+        "operationId": "HealthController_ready",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Health"]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthProfile"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["auth"]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": ["auth"]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": ["auth"]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthProfile"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["auth"]
+      }
+    },
+    "/api/imports/statistics": {
+      "post": {
+        "operationId": "ImportController_runStatisticsImport",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunStatisticsImportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Import"]
+      }
+    },
+    "/api/analytics": {
+      "get": {
+        "operationId": "AnalyticsController_get",
+        "parameters": [
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-31",
+              "type": "string"
+            }
+          },
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "metric",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "default": "views",
+              "type": "string",
+              "enum": [
+                "views",
+                "searches",
+                "websiteClicks",
+                "calls",
+                "routeBuilds",
+                "newReviewsCount",
+                "averageRating"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["analytics"]
+      }
+    },
+    "/api/companies": {
+      "get": {
+        "operationId": "CatalogController_companiesList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CompanyDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["catalog"]
+      }
+    },
+    "/api/branches": {
+      "get": {
+        "operationId": "CatalogController_branchesList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BranchDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["catalog"]
+      }
+    }
+  },
+  "info": {
+    "title": "True Intelligence Analytics API",
+    "description": "",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "tia_access"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "client.a@example.test"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "AuthProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["ADMIN", "CLIENT"]
+          },
+          "companyId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["id", "email", "role", "companyId"]
+      },
+      "RunStatisticsImportDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AnalyticsFiltersDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "branchId": {
+            "type": "string",
+            "nullable": true
+          },
+          "metric": {
+            "type": "string",
+            "enum": [
+              "views",
+              "searches",
+              "websiteClicks",
+              "calls",
+              "routeBuilds",
+              "newReviewsCount",
+              "averageRating"
+            ]
+          }
+        },
+        "required": ["from", "to", "branchId", "metric"]
+      },
+      "AnalyticsTotalsDto": {
+        "type": "object",
+        "properties": {
+          "views": {
+            "type": "number"
+          },
+          "searches": {
+            "type": "number"
+          },
+          "websiteClicks": {
+            "type": "number"
+          },
+          "calls": {
+            "type": "number"
+          },
+          "routeBuilds": {
+            "type": "number"
+          },
+          "newReviewsCount": {
+            "type": "number"
+          },
+          "averageRating": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "views",
+          "searches",
+          "websiteClicks",
+          "calls",
+          "routeBuilds",
+          "newReviewsCount",
+          "averageRating"
+        ]
+      },
+      "AnalyticsSeriesPointDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "value": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": ["date", "value"]
+      },
+      "AnalyticsMetadataDto": {
+        "type": "object",
+        "properties": {
+          "branchCount": {
+            "type": "number"
+          },
+          "dataPoints": {
+            "type": "number"
+          }
+        },
+        "required": ["branchCount", "dataPoints"]
+      },
+      "AnalyticsResponseDto": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/AnalyticsFiltersDto"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/AnalyticsTotalsDto"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnalyticsSeriesPointDto"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/AnalyticsMetadataDto"
+          }
+        },
+        "required": ["filters", "totals", "series", "metadata"]
+      },
+      "CompanyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "name"]
+      },
+      "BranchDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "companyId": {
+            "type": "string"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "companyId", "externalId", "name", "address"]
+      }
+    }
+  }
+}

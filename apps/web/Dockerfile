@@ -24,6 +24,7 @@ FROM dependencies AS build
 
 COPY tsconfig.base.json ./
 COPY apps/web apps/web
+COPY packages/api-client packages/api-client
 
 RUN pnpm --filter @tia/web run build
 
