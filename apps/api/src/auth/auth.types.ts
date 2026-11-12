@@ -10,6 +10,8 @@ export class AuthProfile {
   role!: UserRole;
   @ApiProperty({ type: String, nullable: true })
   companyId!: string | null;
+  @ApiProperty({ type: String, nullable: true })
+  companyName!: string | null;
 }
 
 export type AccessTokenPayload = {

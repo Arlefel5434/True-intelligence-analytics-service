@@ -24,3 +24,9 @@ body {
   min-height: 100vh;
   margin: 0;
 }
+
+@layer components {
+  .field {
+    @apply block min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-950 outline-none transition focus:border-slate-700 focus:ring-2 focus:ring-slate-300 disabled:cursor-not-allowed disabled:bg-slate-100;
+  }
+}

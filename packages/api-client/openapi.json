@@ -113,10 +113,17 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRunResponseDto"
+                }
+              }
+            }
           }
         },
-        "tags": ["Import"]
+        "tags": ["imports"]
       }
     },
     "/api/analytics": {
@@ -276,13 +283,111 @@
           "companyId": {
             "type": "string",
             "nullable": true
+          },
+          "companyName": {
+            "type": "string",
+            "nullable": true
           }
         },
-        "required": ["id", "email", "role", "companyId"]
+        "required": ["id", "email", "role", "companyId", "companyName"]
       },
       "RunStatisticsImportDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "from": {
+            "type": "string",
+            "example": "2026-10-01"
+          },
+          "to": {
+            "type": "string",
+            "example": "2026-10-31"
+          }
+        },
+        "required": ["from", "to"]
+      },
+      "ImportWarningDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "page": {
+            "type": "number"
+          },
+          "message": {
+            "type": "string"
+          },
+          "externalBranchId": {
+            "type": "string"
+          }
+        },
+        "required": ["code", "page", "message"]
+      },
+      "ImportRunResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": ["MOCK_PROVIDER"]
+          },
+          "dateFrom": {
+            "type": "string"
+          },
+          "dateTo": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RUNNING",
+              "COMPLETED",
+              "COMPLETED_WITH_WARNINGS",
+              "FAILED"
+            ]
+          },
+          "createdCount": {
+            "type": "number"
+          },
+          "updatedCount": {
+            "type": "number"
+          },
+          "skippedCount": {
+            "type": "number"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportWarningDto"
+            }
+          },
+          "errorMessage": {
+            "type": "object",
+            "nullable": true
+          },
+          "startedAt": {
+            "type": "string"
+          },
+          "finishedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "dateFrom",
+          "dateTo",
+          "status",
+          "createdCount",
+          "updatedCount",
+          "skippedCount",
+          "warnings",
+          "errorMessage",
+          "startedAt",
+          "finishedAt"
+        ]
       },
       "AnalyticsFiltersDto": {
         "type": "object",
@@ -334,7 +439,7 @@
             "type": "number"
           },
           "averageRating": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           }
         },
@@ -355,7 +460,7 @@
             "type": "string"
           },
           "value": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           }
         },

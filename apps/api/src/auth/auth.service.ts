@@ -26,7 +26,10 @@ export class AuthService {
   ) {}
 
   async login(email: string, password: string): Promise<IssuedSession> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { company: true },
+    });
     const passwordValid = await argon2.verify(
       user?.passwordHash ?? DUMMY_PASSWORD_HASH,
       password,
@@ -100,7 +103,10 @@ export class AuthService {
   }
 
   async getProfile(userId: string): Promise<AuthProfile> {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { company: true },
+    });
     if (!user) throw new UnauthorizedException();
     return this.toProfile(user);
   }
@@ -114,7 +120,7 @@ export class AuthService {
         const now = new Date();
         const session = await transaction.refreshSession.findUnique({
           where: { tokenHash: oldTokenHash },
-          include: { user: true },
+          include: { user: { include: { company: true } } },
         });
         if (!session) return { kind: 'rejected' };
 
@@ -190,12 +196,19 @@ export class AuthService {
       .digest('hex');
   }
 
-  private toProfile(user: AuthProfile): AuthProfile {
+  private toProfile(user: {
+    id: string;
+    email: string;
+    role: AuthProfile['role'];
+    companyId: string | null;
+    company: { name: string } | null;
+  }): AuthProfile {
     return {
       id: user.id,
       email: user.email,
       role: user.role,
       companyId: user.companyId,
+      companyName: user.company?.name ?? null,
     };
   }
 
