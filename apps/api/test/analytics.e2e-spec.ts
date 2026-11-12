@@ -8,7 +8,7 @@ import { AppModule } from '../src/app.module.js';
 import { PrismaService } from '../src/database/prisma.service.js';
 
 const origin = 'http://localhost:8080';
-const password = 'Demo123!ChangeMe';
+const password = '123qwe123qwe';
 const companyA = '10000000-0000-4000-8000-000000000001';
 const branchA1 = '30000000-0000-4000-8000-000000000001';
 

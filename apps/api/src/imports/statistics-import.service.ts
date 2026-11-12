@@ -3,6 +3,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import {
   DataSource,
@@ -61,6 +62,7 @@ function sameMetric(
 
 @Injectable()
 export class StatisticsImportService {
+  private readonly logger = new Logger(StatisticsImportService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly provider: ProviderClientService,
@@ -100,6 +102,9 @@ export class StatisticsImportService {
           triggeredById: userId,
         },
       });
+      this.logger.log(
+        JSON.stringify({ event: 'import_started', runId: run.id, from, to }),
+      );
       return await this.execute(run, from, to, dateFrom, dateTo);
     } finally {
       await lock.release();
@@ -195,6 +200,15 @@ export class StatisticsImportService {
         warnings,
         errorMessage,
       );
+      this.logger.log(
+        JSON.stringify({
+          event: 'import_finished',
+          runId: run.id,
+          status,
+          ...counts,
+          warnings: warnings.length,
+        }),
+      );
       return this.toResponse(completed, warnings);
     } catch {
       const completed = await this.finish(
@@ -203,6 +217,14 @@ export class StatisticsImportService {
         counts,
         warnings,
         'Statistics import failed',
+      );
+      this.logger.error(
+        JSON.stringify({
+          event: 'import_failed',
+          runId: run.id,
+          ...counts,
+          warnings: warnings.length,
+        }),
       );
       return this.toResponse(completed, warnings);
     }

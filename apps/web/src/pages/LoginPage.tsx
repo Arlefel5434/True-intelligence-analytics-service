@@ -51,7 +51,7 @@ export function LoginPage() {
           Вход в кабинет
         </h1>
         <p className="mb-8 text-sm text-slate-600">
-          Аналитика присутствия ваших филиалов
+          Аналитический агрегатор данных геосервисов
         </p>
         <label className="mb-5 block text-sm font-semibold text-slate-700">
           Email

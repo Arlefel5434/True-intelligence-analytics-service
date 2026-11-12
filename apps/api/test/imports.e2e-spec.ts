@@ -15,7 +15,7 @@ import type {
 } from '../src/imports/provider.types.js';
 
 const origin = 'http://localhost:8080';
-const password = 'Demo123!ChangeMe';
+const password = '123qwe123qwe';
 
 function record(branch: string, date = '2027-01-01'): ProviderRecord {
   return {

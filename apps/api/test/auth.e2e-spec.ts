@@ -10,7 +10,7 @@ import { PrismaService } from '../src/database/prisma.service.js';
 const origin = 'http://localhost:8080';
 const validCredentials = {
   email: 'client.a@example.test',
-  password: 'Demo123!ChangeMe',
+  password: '123qwe123qwe',
 };
 
 function cookieFrom(response: request.Response, name: string): string {
@@ -70,6 +70,7 @@ describe('authentication', () => {
       email: validCredentials.email,
       role: 'CLIENT',
       companyId: expect.any(String),
+      companyName: 'Terro Brill',
     });
     expect(login.body).not.toHaveProperty('passwordHash');
     expect(login.body).not.toHaveProperty('accessToken');

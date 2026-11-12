@@ -15,7 +15,7 @@ if (!connectionString) throw new Error('DATABASE_URL is required');
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString }),
 });
-const DEMO_PASSWORD = 'Demo123!ChangeMe';
+const DEMO_PASSWORD = '123qwe123qwe';
 
 const ids = {
   companyA: '10000000-0000-4000-8000-000000000001',
@@ -30,8 +30,8 @@ const ids = {
 } as const;
 
 const companies = [
-  { id: ids.companyA, name: 'Северная чашка' },
-  { id: ids.companyB, name: 'Городская пекарня' },
+  { id: ids.companyA, name: 'Terro Brill' },
+  { id: ids.companyB, name: '02Кафе' },
 ] as const;
 
 const branches = [
@@ -39,14 +39,14 @@ const branches = [
     id: ids.branchA1,
     companyId: ids.companyA,
     externalId: 'mock-branch-a-1',
-    name: 'Северная чашка — Центр',
+    name: 'Центр',
     address: 'г. Тестоград, ул. Центральная, 10',
   },
   {
     id: ids.branchA2,
     companyId: ids.companyA,
     externalId: 'mock-branch-a-2',
-    name: 'Северная чашка — Парк',
+    name: 'Парк',
     address: 'г. Тестоград, Парковый проспект, 4',
   },
   {
