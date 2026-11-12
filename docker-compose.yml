@@ -258,6 +258,8 @@ services:
       TEST_DATABASE_URL: postgresql://${POSTGRES_USER:-tia}:${POSTGRES_PASSWORD:-local_tia_password}@postgres:5432/tia_test
       ADMIN_DATABASE_URL: postgresql://${POSTGRES_USER:-tia}:${POSTGRES_PASSWORD:-local_tia_password}@postgres:5432/postgres
       NODE_ENV: test
+      PROVIDER_BASE_URL: http://provider-mock:3001
+      PROVIDER_API_KEY: ${PROVIDER_API_KEY:-local_provider_key}
       JWT_ACCESS_SECRET: test_access_secret_at_least_32_characters
       JWT_REFRESH_SECRET: test_refresh_secret_at_least_32_characters
       JWT_ACCESS_TTL: 1s
