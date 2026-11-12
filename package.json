@@ -1,0 +1,31 @@
+{
+  "name": "true-intelligence-analytics-service",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@12.19.0",
+  "engines": {
+    "node": ">=24.0.0 <25",
+    "pnpm": ">=12.0.0 <13"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter './apps/*' run dev",
+    "build": "pnpm -r --if-present run build",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "lint": "eslint .",
+    "test": "pnpm -r --if-present run test",
+    "test:e2e": "pnpm --filter @tia/api run test:e2e",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "api:generate": "pnpm --filter @tia/api-client run generate"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.72.2"
+  }
+}

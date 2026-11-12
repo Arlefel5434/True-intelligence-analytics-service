@@ -1,0 +1,268 @@
+name: true-intelligence-analytics
+
+x-dev-volumes: &dev-volumes
+  - .:/workspace
+  - workspace-node-modules:/workspace/node_modules
+  - api-node-modules:/workspace/apps/api/node_modules
+  - provider-node-modules:/workspace/apps/provider-mock/node_modules
+  - web-node-modules:/workspace/apps/web/node_modules
+  - api-client-node-modules:/workspace/packages/api-client/node_modules
+  - pnpm-store:/pnpm/store
+
+x-node-healthcheck: &node-healthcheck
+  interval: 5s
+  timeout: 3s
+  retries: 20
+  start_period: 10s
+
+services:
+  postgres:
+    image: postgres:18@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336
+    profiles: [demo, dev]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tia}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local_tia_password}
+      POSTGRES_DB: ${POSTGRES_DB:-tia}
+    healthcheck:
+      test:
+        [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    networks: [app]
+    restart: unless-stopped
+
+  provider-mock:
+    profiles: [demo]
+    build:
+      context: .
+      dockerfile: apps/provider-mock/Dockerfile
+      target: production
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      PROVIDER_API_KEY: ${PROVIDER_API_KEY:-local_provider_key}
+    expose: ['3001']
+    healthcheck:
+      <<: *node-healthcheck
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3001/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+    networks: [app]
+    read_only: true
+    tmpfs: [/tmp]
+    init: true
+    restart: unless-stopped
+
+  api:
+    profiles: [demo]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: production
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tia}:${POSTGRES_PASSWORD:-local_tia_password}@postgres:5432/${POSTGRES_DB:-tia}
+      PROVIDER_BASE_URL: http://provider-mock:3001
+      PROVIDER_API_KEY: ${PROVIDER_API_KEY:-local_provider_key}
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8080}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    expose: ['3000']
+    depends_on:
+      postgres:
+        condition: service_healthy
+      provider-mock:
+        condition: service_healthy
+    healthcheck:
+      <<: *node-healthcheck
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+    networks: [app]
+    read_only: true
+    tmpfs: [/tmp]
+    init: true
+    restart: unless-stopped
+
+  web:
+    profiles: [demo]
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: production
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - '${APP_PORT:-8080}:8080'
+    healthcheck:
+      test: [CMD, wget, -qO-, http://127.0.0.1:8080/]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    networks: [app]
+    read_only: true
+    tmpfs: [/tmp]
+    init: true
+    restart: unless-stopped
+
+  workspace-init:
+    profiles: [dev]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: development
+    user: '0:0'
+    command: [pnpm, install, --frozen-lockfile]
+    environment:
+      PNPM_STORE_DIR: /pnpm/store
+    volumes: *dev-volumes
+    networks: [app]
+    restart: 'no'
+
+  provider-mock-dev:
+    profiles: [dev]
+    build:
+      context: .
+      dockerfile: apps/provider-mock/Dockerfile
+      target: development
+    user: '1000:1000'
+    command: [pnpm, --filter, '@tia/provider-mock', run, dev]
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      PROVIDER_API_KEY: ${PROVIDER_API_KEY:-local_provider_key}
+    expose: ['3001']
+    depends_on:
+      workspace-init:
+        condition: service_completed_successfully
+    healthcheck:
+      <<: *node-healthcheck
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3001/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+    volumes: *dev-volumes
+    networks:
+      app:
+        aliases: [provider-mock]
+    init: true
+    restart: 'no'
+
+  api-dev:
+    profiles: [dev]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: development
+    user: '1000:1000'
+    command: [pnpm, --filter, '@tia/api', run, dev]
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tia}:${POSTGRES_PASSWORD:-local_tia_password}@postgres:5432/${POSTGRES_DB:-tia}
+      PROVIDER_BASE_URL: http://provider-mock:3001
+      PROVIDER_API_KEY: ${PROVIDER_API_KEY:-local_provider_key}
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8080}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    expose: ['3000']
+    depends_on:
+      workspace-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      provider-mock-dev:
+        condition: service_healthy
+    healthcheck:
+      <<: *node-healthcheck
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+    volumes: *dev-volumes
+    networks:
+      app:
+        aliases: [api]
+    init: true
+    restart: 'no'
+
+  web-dev:
+    profiles: [dev]
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: development
+    user: '1000:1000'
+    command: [pnpm, --filter, '@tia/web', run, dev]
+    environment:
+      API_PROXY_TARGET: http://api:3000
+    depends_on:
+      workspace-init:
+        condition: service_completed_successfully
+      api-dev:
+        condition: service_healthy
+    ports:
+      - '${APP_PORT:-8080}:5173'
+    healthcheck:
+      <<: *node-healthcheck
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:5173/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+    volumes: *dev-volumes
+    networks: [app]
+    init: true
+    restart: 'no'
+
+  db-tools:
+    profiles: [tools]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: database
+    user: '1000:1000'
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tia}:${POSTGRES_PASSWORD:-local_tia_password}@postgres:5432/${POSTGRES_DB:-tia}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./apps/api/prisma:/workspace/apps/api/prisma
+    networks: [app]
+    init: true
+    restart: 'no'
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  workspace-node-modules:
+  api-node-modules:
+  provider-node-modules:
+  web-node-modules:
+  api-client-node-modules:
+  pnpm-store:
