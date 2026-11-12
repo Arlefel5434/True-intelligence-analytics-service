@@ -20,11 +20,11 @@ import { OriginGuard } from './origin.guard.js';
   controllers: [AuthController],
   providers: [
     { provide: AUTH_CONFIG, useFactory: readAuthConfig },
+    { provide: APP_GUARD, useClass: AccessTokenGuard },
     { provide: APP_GUARD, useClass: OriginGuard },
     AuthService,
     AccessTokenStrategy,
-    AccessTokenGuard,
   ],
-  exports: [AUTH_CONFIG, AccessTokenGuard],
+  exports: [AUTH_CONFIG],
 })
 export class AuthModule {}

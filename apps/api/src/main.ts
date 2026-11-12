@@ -20,7 +20,12 @@ async function bootstrap(): Promise<void> {
       forbidNonWhitelisted: true,
     }),
   );
-  app.enableCors({ origin: authConfig.appOrigin, credentials: true });
+  app.enableCors({
+    origin: authConfig.appOrigin,
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'X-Company-Id'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  });
   const expressApp = app.getHttpAdapter().getInstance() as Application;
   expressApp.set('trust proxy', 1);
 

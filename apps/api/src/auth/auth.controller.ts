@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
-import { AccessTokenGuard } from './access-token.guard.js';
 import { AUTH_CONFIG, REFRESH_COOKIE_NAME } from './auth.constants.js';
 import type { AuthConfig } from './auth.config.js';
 import { clearAuthCookies, setAuthCookies } from './auth.cookies.js';
@@ -20,6 +19,7 @@ import { AuthService } from './auth.service.js';
 import type { AuthProfile, AuthenticatedUser } from './auth.types.js';
 import { CurrentUser } from './current-user.decorator.js';
 import { LoginDto } from './dto/login.dto.js';
+import { Public } from './public.decorator.js';
 
 function readRefreshToken(request: Request): string | undefined {
   const cookies = request.cookies as Record<string, unknown> | undefined;
@@ -35,6 +35,7 @@ export class AuthController {
   ) {}
 
   @Post('login')
+  @Public()
   @HttpCode(200)
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
@@ -51,6 +52,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @Public()
   @HttpCode(204)
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
@@ -67,6 +69,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @Public()
   @HttpCode(204)
   async logout(
     @Req() request: Request,
@@ -77,7 +80,6 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(AccessTokenGuard)
   async me(@CurrentUser() user: AuthenticatedUser): Promise<AuthProfile> {
     return this.auth.getProfile(user.sub);
   }
